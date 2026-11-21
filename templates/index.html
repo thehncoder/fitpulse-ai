@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitPulse AI - Fashion Sizing & Style Intelligence</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #ec4899;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: var(--text-muted); font-size: 1rem; margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .card h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: #38bdf8; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    select, input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.95rem; }
+    button { width: 100%; padding: 11px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 8px; }
+    button:hover { background: var(--primary-hover); }
+    .result-box { margin-top: 16px; padding: 14px; background: #0f172a; border-radius: 8px; border: 1px solid var(--border); display: none; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+    .metric-card { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+    .metric-val { font-size: 1.4rem; font-weight: 800; color: #34d399; }
+    .metric-lbl { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>FitPulse AI</h1>
+      <p class="subtitle">GenAI Fashion Sizing Recommendation & Reverse-Logistics Mitigation Engine</p>
+    </header>
+
+    <div class="grid">
+      <!-- Sizing Intelligence -->
+      <div class="card">
+        <h2>1. Predictive Sizing Engine</h2>
+        <div class="form-group">
+          <label>Reference Brand You Currently Wear</label>
+          <select id="refBrand">
+            <option value="levis">Levi's (Standard/Relaxed)</option>
+            <option value="zara">Zara (European Slim)</option>
+            <option value="h&m">H&M (Standard)</option>
+            <option value="uniqlo">Uniqlo (True to Size)</option>
+            <option value="nike">Nike (Athletic)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Your Size in Reference Brand</label>
+          <select id="refSize">
+            <option value="S">S (Chest 36-38")</option>
+            <option value="M" selected>M (Chest 38-40")</option>
+            <option value="L">L (Chest 40-42")</option>
+            <option value="XL">XL (Chest 42-44")</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Brand to Purchase</label>
+          <select id="targetBrand">
+            <option value="zara" selected>Zara</option>
+            <option value="mango">Mango</option>
+            <option value="h&m">H&M</option>
+            <option value="levis">Levi's</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Desired Fit Silhouette</label>
+          <select id="fitPref">
+            <option value="slim">Slim / Tailored</option>
+            <option value="regular" selected>Regular Fit</option>
+            <option value="oversized">Relaxed / Oversized</option>
+          </select>
+        </div>
+        <button onclick="getSizing()">Predict Optimal Size</button>
+
+        <div id="sizingResult" class="result-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:1.1rem; font-weight:700;">Recommended: <span id="recSize" style="color:#38bdf8;"></span></span>
+            <span class="badge" id="recConfidence"></span>
+          </div>
+          <p id="recExplanation" style="font-size:0.85rem; color:#cbd5e1; margin-top:8px;"></p>
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:10px; border-top:1px solid #334155; padding-top:6px;">
+            <span>Return Risk: <strong id="recRisk" style="color:#f87171;"></strong></span>
+            <span>Latency: <strong id="recLatency" style="color:#34d399;"></strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stylist Engine -->
+      <div class="card">
+        <h2>2. GenAI Style Assistant</h2>
+        <div class="form-group">
+          <label>Garment Description</label>
+          <input type="text" id="styleItem" value="Textured Linen Shirt" placeholder="e.g. Slim Denim Jacket">
+        </div>
+        <div class="form-group">
+          <label>Garment Category</label>
+          <select id="styleCategory">
+            <option value="shirt" selected>Shirt / Topwear</option>
+            <option value="jeans">Jeans / Bottomwear</option>
+            <option value="jacket">Jacket / Outerwear</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Occasion</label>
+          <select id="styleOccasion">
+            <option value="casual" selected>Casual / Weekend</option>
+            <option value="formal">Formal / Business</option>
+          </select>
+        </div>
+        <button onclick="getStyling()" style="background:#d946ef;">Generate Curated Outfit</button>
+
+        <div id="styleResult" class="result-box">
+          <div style="font-size:0.95rem; font-weight:700; color:#f472b6;">Recommended Pairings:</div>
+          <ul id="pairingsList" style="margin-left:18px; font-size:0.85rem; color:#cbd5e1; margin-top:4px;"></ul>
+          <div style="font-size:0.85rem; color:#e2e8f0; margin-top:8px;"><strong>Stylist Tip:</strong> <span id="stylistTip"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Telemetry & Business Impact Dashboard -->
+    <div class="card">
+      <h2>3. Product Telemetry & Business Impact SLA</h2>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-val">-4.5%</div>
+          <div class="metric-lbl">Projected Return Reduction</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">+6.8%</div>
+          <div class="metric-lbl">Checkout Conversion Lift</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">&lt; 50ms</div>
+          <div class="metric-lbl">P95 Inference Latency (&lt;100ms SLA)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function getSizing() {
+      const payload = {
+        reference_brand: document.getElementById('refBrand').value,
+        reference_size: document.getElementById('refSize').value,
+        target_brand: document.getElementById('targetBrand').value,
+        fit_preference: document.getElementById('fitPref').value,
+        category: 'shirt'
+      };
+      const res = await fetch('/api/v1/recommend-size', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      document.getElementById('recSize').innerText = data.recommended_size;
+      document.getElementById('recConfidence').innerText = data.confidence_score + '% Confidence';
+      document.getElementById('recExplanation').innerText = data.fit_explanation;
+      document.getElementById('recRisk').innerText = data.return_risk_score + '%';
+      document.getElementById('recLatency').innerText = data.latency_ms + ' ms';
+      document.getElementById('sizingResult').style.display = 'block';
+    }
+
+    async function getStyling() {
+      const payload = {
+        item_name: document.getElementById('styleItem').value,
+        category: document.getElementById('styleCategory').value,
+        occasion: document.getElementById('styleOccasion').value
+      };
+      const res = await fetch('/api/v1/style-assist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const list = document.getElementById('pairingsList');
+      list.innerHTML = '';
+      data.recommended_pairings.forEach(p => {
+        const li = document.createElement('li');
+        li.innerText = p;
+        list.appendChild(li);
+      });
+      document.getElementById('stylistTip').innerText = data.curated_stylist_tip;
+      document.getElementById('styleResult').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
